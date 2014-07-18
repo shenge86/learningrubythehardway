@@ -1,5 +1,5 @@
 user = ARGV.first
-prompt = '> '
+prompt = 'I say: '
 
 STDOUT.sync = true
 
