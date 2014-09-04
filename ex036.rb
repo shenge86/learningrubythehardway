@@ -23,3 +23,6 @@ puts stuff[-1] # gets last item in array
 puts stuff.pop()
 puts stuff.join(' ')
 puts stuff[3..5].join("#")
+
+puts "Hit Enter to Exit."
+gets
