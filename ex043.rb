@@ -11,13 +11,17 @@ class Engine
     @scene_map = scene_map
   end
 
-  def play()
+  def play()	  
     current_scene = @scene_map.opening_scene()
     last_scene = @scene_map.next_scene('finished')
 
+	# this is the main part of the game
     while current_scene != last_scene
-      next_scene_name = current_scene.enter()
-      current_scene = @scene_map.next_scene(next_scene_name)
+		# get output of the return statement of the current scene
+		next_scene_name = current_scene.enter()
+		# create next scene object and return it
+		# this scene will be used in the next iteration of the loop
+		current_scene = @scene_map.next_scene(next_scene_name)
     end
 
     # be sure to print out the last scene
@@ -30,7 +34,7 @@ class Death < Scene
   @@quips = [
     "You died.  You kinda suck at this.",
      "Your mom would be proud...if she were smarter.",
-     "Such a luser.",
+     "Such a loser.",
      "I have a small puppy that's better at this."
   ]
 
@@ -41,23 +45,27 @@ class Death < Scene
 end
 
 class CentralCorridor < Scene
+	def initialize()
+		puts "The Gothons of Planet Percal #25 have invaded your ship and destroyed"
+		puts "your entire crew.  You are the last surviving member and your last"
+		puts "mission is to get the neutron destruct bomb from the Weapons Armory,"
+		puts "put it in the bridge, and blow the ship up after getting into an "
+		puts "escape pod."
+		puts "\n"
+		puts "You're running down the central corridor to the Weapons Armory when"
+		puts "a Gothon jumps out, red scaly skin, dark grimy teeth, and evil clown costume"
+		puts "flowing around his hate filled body.  He's blocking the door to the"
+		puts "Armory and about to pull a weapon to blast you."		
+	end
 
   def enter()
-    puts "The Gothons of Planet Percal #25 have invaded your ship and destroyed"
-    puts "your entire crew.  You are the last surviving member and your last"
-    puts "mission is to get the neutron destruct bomb from the Weapons Armory,"
-    puts "put it in the bridge, and blow the ship up after getting into an "
-    puts "escape pod."
-    puts "\n"
-    puts "You're running down the central corridor to the Weapons Armory when"
-    puts "a Gothon jumps out, red scaly skin, dark grimy teeth, and evil clown costume"
-    puts "flowing around his hate filled body.  He's blocking the door to the"
-    puts "Armory and about to pull a weapon to blast you."
+	puts "You stare at the Gothon and debate what to do."
+	puts "Do you want to shoot, dodge, or tell a joke?"
     print "> "
 
     action = $stdin.gets.chomp
 
-    if action == "shoot!"
+    if action == "shoot"
       puts "Quick on the draw you yank out your blaster and fire it at the Gothon."
       puts "His clown costume is flowing and moving around his body, which throws"
       puts "off your aim.  Your laser hits his costume but misses him entirely.  This"
@@ -66,7 +74,7 @@ class CentralCorridor < Scene
       puts "you are dead.  Then he eats you."
       return 'death'
 
-    elsif action == "dodge!"
+    elsif action == "dodge"
       puts "Like a world class boxer you dodge, weave, slip and slide right"
       puts "as the Gothon's blaster cranks a laser past your head."
       puts "In the middle of your artful dodge your foot slips and you"
@@ -82,11 +90,15 @@ class CentralCorridor < Scene
       puts "The Gothon stops, tries not to laugh, then busts out laughing and can't move."
       puts "While he's laughing you run up and shoot him square in the head"
       puts "putting him down, then jump through the Weapon Armory door."
-      return 'finished'
+      return 'laser_weapon_armory'
 
+	elsif action == "skip"
+		puts "[Cheat] Skipping to the bridge scene."
+		return "the_bridge"
+	  
     else
-      puts "DOES NOT COMPUTE!"
-      return 'central_corridor'
+		puts "You decide not to do that since it doesn't make any sense."
+		return 'central_corridor'
     end
   end
 end
@@ -101,18 +113,24 @@ class LaserWeaponArmory < Scene
     puts "and you need the code to get the bomb out.  If you get the code"
     puts "wrong 10 times then the lock closes forever and you can't"
     puts "get the bomb.  The code is 3 digits."
-    code = "#{rand(1..9)}#{rand(1..9)}#{rand(1..9)}"
+	puts "You dimly recall that the first digit might be a 3 and the last two digit are either 1's or 2's."
+    code = "3#{rand(1..2)}#{rand(1..2)}"
     print "[keypad]> "
     guess = $stdin.gets.chomp
-    guesses = 0
+    guesses = 1
+	
+	@@guesseswords = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"]
 
     while guess != code && guesses < 10
-      puts "BZZZZEDDD!"
-      guesses += 1
-      print "[keypad]> "
-      guess = $stdin.gets.chomp
+		puts "This was your #{@@guesseswords[guesses-1]} try."
+		puts "BZZZZEDDD!"
+		guesses += 1
+		print "[keypad]> "
+		guess = $stdin.gets.chomp
     end
-
+	
+	# following code is for the last try
+	puts "This was your #{@@guesseswords[guesses-1]} try."
     if guess == code
         puts "The container clicks open and the seal breaks, letting gas out."
         puts "You grab the neutron bomb and run as fast as you can to the"
@@ -131,15 +149,29 @@ end
 
 class TheBridge < Scene
 
-  def enter()
-    puts "You burst onto the Bridge with the netron destruct bomb"
-    puts "under your arm and surprise 5 Gothons who are trying to"
-    puts "take control of the ship.  Each of them has an even uglier"
-    puts "clown costume than the last.  They haven't pulled their"
-    puts "weapons out yet, as they see the active bomb under your"
-    puts "arm and don't want to set it off."
-    print "> "
+	# initialize instance variables for use in methods
+	def initialize()
+		@wait_count = 0
+	end
 
+  def enter()
+	if @wait_count == 0
+		puts "You burst onto the Bridge with the netron destruct bomb"
+		puts "under your arm and surprise 5 Gothons who are trying to"
+		puts "take control of the ship.  Each of them has an even uglier"
+		puts "clown costume than the last.  They haven't pulled their"
+		puts "weapons out yet, as they see the active bomb under your"
+		puts "arm and don't want to set it off."
+	elsif @wait_count > 5
+		puts "One of them decides to shoot you while you're zoning out."
+		puts "You die knowing you shouldn't daydream in the middle of this."
+		return 'death'
+	else
+		puts "They are staring at you waiting for you to make a move."
+		puts "Do you throw the bomb or slowly place the bomb?"
+	end
+	
+	print "> "
     action = $stdin.gets.chomp
 
     if action == "throw the bomb"
@@ -162,8 +194,14 @@ class TheBridge < Scene
       puts "get off this tin can."
       return 'escape_pod'
     else
-      puts "DOES NOT COMPUTE!"
-      return "the_bridge"
+		@wait_count += 1
+		puts "You have been waiting for %s seconds." % @wait_count
+        puts "You started daydreaming about something that doesn't make sense."
+		self.enter()
+		
+		# returning will create a new object for the next iteration
+		# i will not do this since i need to use the attributes of the current scene object
+		# return "the_bridge"
     end
   end
 end
@@ -183,6 +221,14 @@ class EscapePod < Scene
     good_pod = rand(1..5)
     print "[pod #]> "
     guess = $stdin.gets.chomp.to_i
+	
+	if guess > 5 
+		guess = 5
+	end
+	
+	if guess < 1
+		guess = 1
+	end
 
     if guess != good_pod
       puts "You jump into pod %s and hit the eject button." % guess
@@ -219,7 +265,6 @@ class Map
     'death' => Death.new(),
     'finished' => Finished.new(),
   }
-
 
   def initialize(start_scene)
     @start_scene = start_scene
